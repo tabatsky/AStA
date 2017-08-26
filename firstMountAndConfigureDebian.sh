@@ -31,7 +31,7 @@ chroot $MNTPT /etc/init.d/ssh restart
 mkdir -p $STORAGE/AStA
 mkdir -p $MNTPT/AStA
 busybox mount -o bind $STORAGE/AStA $MNTPT/AStA
-ANDROID_SDK_TAR_GZ=android-sdk-linux-armfh.tar.gz 
+ANDROID_SDK_TAR_GZ=android-sdk-linux-armhf.tar.gz 
 JDK_8_TAR_GZ=jdk-8u144-linux-arm32-vfp-hflt.tar.gz
 GRADLE_ZIP=gradle-4.1-bin.zip
 adb push prebuilt/$ANDROID_SDK_TAR_GZ $STORAGE/AStA
