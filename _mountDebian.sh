@@ -1,5 +1,5 @@
-MNTPT=/data/local/debianOnAndroid
-STORAGE=/sdcard
+MNTPT={mntpt}
+STORAGE={storage}
 IMG_FILE=$STORAGE/debianOnAndroid.img
 mkdir -p $MNTPT
 busybox mount -o loop $IMG_FILE $MNTPT

@@ -1,8 +1,8 @@
-PASSWORD=1234567
-MNTPT=/data/local/debianOnAndroid
-STORAGE=/sdcard
+PASSWORD={password}
+MNTPT={mntpt}
+STORAGE={storage}
 IMG_FILE=$STORAGE/debianOnAndroid.img
-DEBIAN_VERSION=wheezy
+DEBIAN_VERSION={debianVersion}
 mkdir -p $MNTPT
 busybox mount -o loop $IMG_FILE $MNTPT
 export PATH=/sbin:/usr/sbin:/bin:/usr/bin:/system/bin:/system/xbin
@@ -31,14 +31,10 @@ chroot $MNTPT /etc/init.d/ssh restart
 mkdir -p $STORAGE/AStA
 mkdir -p $MNTPT/AStA
 busybox mount -o bind $STORAGE/AStA $MNTPT/AStA
-ANDROID_SDK_TAR_GZ=android-sdk-linux-armhf.tar.gz 
-JDK_8_TAR_GZ=jdk-8u144-linux-arm32-vfp-hflt.tar.gz
-GRADLE_ZIP=gradle-4.1-bin.zip
-adb push prebuilt/$ANDROID_SDK_TAR_GZ $STORAGE/AStA
-adb push prebuilt/$JDK_8_TAR_GZ $STORAGE/AStA
-adb push prebuilt/$GRADLE_ZIP $STORAGE/AStA
+ANDROID_SDK_TAR_GZ={androidSdkTarGz}
+JDK_8_TAR_GZ={jdk8TarGz}
+GRADLE_ZIP={gradleZip}
 chroot $MNTPT tar -xzvf /AStA/$ANDROID_SDK_TAR_GZ -C /opt 
 chroot $MNTPT tar -xzvf /AStA/$JDK_8_TAR_GZ -C /opt
 chroot $MNTPT unzip /AStA/$GRADLE_ZIP -d /opt
-adb push gradleExec.sh $STORAGE/AStA
 exit

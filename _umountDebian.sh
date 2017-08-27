@@ -1,4 +1,4 @@
-MNTPT=/data/local/debianOnAndroid
+MNTPT={mntpt}
 busybox umount $MNTPT/AStA
 chroot $MNTPT /etc/init.d/ssh stop
 busybox umount $MNTPT/dev/pts
