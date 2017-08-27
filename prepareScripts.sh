@@ -34,3 +34,7 @@ sed -i "s#{gradleZip}#$GRADLE_ZIP#" installDebianOnAndroid.sh
 sed -i "s#{arch}#$ARCH#" installDebianOnAndroid.sh
 sed -i "s#{dataDrive}#$DATA_DRIVE#" installDebianOnAndroid.sh
 
+cp _getPrebuilts.sh getPrebuilts.sh
+sed -i "s#{androidSdkTarGz}#$ANDROID_SDK_TAR_GZ#" getPrebuilts.sh
+sed -i "s#{jdk8TarGz}#$JDK_8_TAR_GZ#" getPrebuilts.sh
+sed -i "s#{gradleZip}#$GRADLE_ZIP#" getPrebuilts.sh
