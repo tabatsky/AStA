@@ -1,12 +1,12 @@
 #/bin/sh
 PASSWORD=1234567
 ARCH=armhf
-DEBIAN_VERSION=wheezy
+DEBIAN_VERSION=stretch
 STORAGE=/sdcard
 DATA_DRIVE=/mnt/drive-F
-ANDROID_SDK_TAR_GZ=android-sdk-linux-armhf.tar.gz 
+ANDROID_SDK_TAR_GZ=android-sdk-linux.tar.gz 
 JDK_8_TAR_GZ=jdk-8u144-linux-arm32-vfp-hflt.tar.gz
-GRADLE_ZIP=gradle-4.1-bin.zip
+GRADLE_ZIP=gradle-3.5-bin.zip
 MNTPT=/data/local/debianOnAndroid
 
 cp _firstMountAndConfigureDebian.sh firstMountAndConfigureDebian.sh
@@ -34,7 +34,14 @@ sed -i "s#{gradleZip}#$GRADLE_ZIP#" installDebianOnAndroid.sh
 sed -i "s#{arch}#$ARCH#" installDebianOnAndroid.sh
 sed -i "s#{dataDrive}#$DATA_DRIVE#" installDebianOnAndroid.sh
 
-cp _getPrebuilts.sh getPrebuilts.sh
-sed -i "s#{androidSdkTarGz}#$ANDROID_SDK_TAR_GZ#" getPrebuilts.sh
-sed -i "s#{jdk8TarGz}#$JDK_8_TAR_GZ#" getPrebuilts.sh
-sed -i "s#{gradleZip}#$GRADLE_ZIP#" getPrebuilts.sh
+cp _getArchives.sh getArchives.sh
+sed -i "s#{androidSdkTarGz}#$ANDROID_SDK_TAR_GZ#" getArchives.sh
+sed -i "s#{jdk8TarGz}#$JDK_8_TAR_GZ#" getArchives.sh
+sed -i "s#{gradleZip}#$GRADLE_ZIP#" getArchives.sh
+
+if [ ! -f archives/$ANDROID_SDK_TAR_GZ ] || [ ! -f archives/$JDK_8_TAR_GZ ] || [ ! -f archives/$GRADLE_ZIP ]; then
+    echo 'Archives not found. Downloading...'
+    sh getArchives.sh
+fi
+
+sh installDebianOnAndroid.sh

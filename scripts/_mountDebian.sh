@@ -3,7 +3,7 @@ STORAGE={storage}
 IMG_FILE=$STORAGE/debianOnAndroid.img
 mkdir -p $MNTPT
 busybox mount -o loop $IMG_FILE $MNTPT
-export PATH=/sbin:/usr/sbin:/bin:/usr/bin:/system/bin:/system/xbin
+export PATH=/sbin:/usr/sbin:/bin:/usr/bin:/system/bin:/system/xbin:/su/bin:/su/xbin
 busybox mount -t proc none $MNTPT/proc
 busybox mount -t sysfs none $MNTPT/sys
 busybox mount -o bind /dev $MNTPT/dev

@@ -21,7 +21,7 @@ sudo debootstrap --verbose --arch $ARCH --foreign $DEBIAN_VERSION ~/debianOnAndr
 sudo umount $DATA_DRIVE/debianOnAndroid.img
 adb push $DATA_DRIVE/debianOnAndroid.img $STORAGE
 # Busybox лучше заранее установить через приложение:
-# https://play.google.com/store/apps/details?id=stericson.busybox&hl=ru&rdid=stericson.busybox
+# https://play.google.com/store/apps/details?id=stericson.busybox
 #adb push busybox/busybox-armv6l /sdcard/busybox
 #adb shell su -c cp /sdcard/busybox /data/local/busybox
 #adb shell su -c chmod 755 /data/local/busybox
@@ -31,13 +31,16 @@ adb push firstMountAndConfigureDebian.sh $STORAGE
 adb push mountDebian.sh $STORAGE
 adb push umountDebian.sh $STORAGE
 adb shell mkdir -p $STORAGE/AStA
+adb shell mkdir -p $STORAGE/AStA/Projects
+adb shell mkdir -p $STORAGE/AStA/archives
+adb shell mkdir -p $STORAGE/AStA/scripts
 # Заранее приготовленные архивы JDK, Android SDK и gradle
 ANDROID_SDK_TAR_GZ={androidSdkTarGz} 
-JDK_8_TAR_GZ=jdk-8u144-linux-arm32-vfp-hflt.tar.gz
-GRADLE_ZIP=gradle-4.1-bin.zip
-adb push prebuilt/$ANDROID_SDK_TAR_GZ $STORAGE/AStA
-adb push prebuilt/$JDK_8_TAR_GZ $STORAGE/AStA
-adb push prebuilt/$GRADLE_ZIP $STORAGE/AStA
-adb push gradleExec.sh $STORAGE/AStA
+JDK_8_TAR_GZ={jdk8TarGz}
+GRADLE_ZIP={gradleZip}
+adb push archives/$ANDROID_SDK_TAR_GZ $STORAGE/AStA/archives
+adb push archives/$JDK_8_TAR_GZ $STORAGE/AStA/archives
+adb push archives/$GRADLE_ZIP $STORAGE/AStA/archives
+adb push gradleExec.sh $STORAGE/AStA/scripts
 # Запускаем скрипт первоначальной настройки Debian:
 adb shell su -c sh $STORAGE/firstMountAndConfigureDebian.sh
