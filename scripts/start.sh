@@ -1,12 +1,19 @@
 #/bin/sh
+# Пароль для доступа по SSH:
 PASSWORD=1234567
+# Архитектура устройства
 ARCH=armhf
+# Версия Debian:
 DEBIAN_VERSION=stretch
+# Путь к карте памяти на устройстве:
 STORAGE=/sdcard
+# Место, где мы создадим образ на декстопе:
 DATA_DRIVE=/Data
+# Имена файлов архивов:
 ANDROID_SDK_TAR_GZ=android-sdk-linux.tar.gz 
 JDK_8_TAR_GZ=jdk-8u144-linux-arm32-vfp-hflt.tar.gz
 GRADLE_ZIP=gradle-3.5-bin.zip
+# Точка монтирования Debian:
 MNTPT=/data/local/debianOnAndroid
 
 cp _firstMountAndConfigureDebian.sh firstMountAndConfigureDebian.sh
