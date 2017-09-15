@@ -32,16 +32,16 @@ adb push $DATA_DRIVE/debianOnAndroid.img $STORAGE
 #adb push busybox/busybox-armv6l /sdcard/busybox
 #adb shell su -c cp /sdcard/busybox /data/local/busybox
 #adb shell su -c chmod 755 /data/local/busybox
-# Скрипт для первого монтирования и настройки Debian
-adb push firstMountAndConfigureDebian.sh $STORAGE
-# Скрипты для монтирования и размонтирования
-adb push mountDebian.sh $STORAGE
-adb push umountDebian.sh $STORAGE
 # Создаем папки AStA на Android:
 adb shell mkdir -p $STORAGE/AStA
 adb shell mkdir -p $STORAGE/AStA/Projects
 adb shell mkdir -p $STORAGE/AStA/archives
 adb shell mkdir -p $STORAGE/AStA/scripts
+# Скрипт для первого монтирования и настройки Debian
+adb push firstMountAndConfigureDebian.sh $STORAGE/AStA/scripts
+# Скрипты для монтирования и размонтирования
+adb push mountDebian.sh $STORAGE/AStA/scripts
+adb push umountDebian.sh $STORAGE/AStA/scripts
 # Заранее приготовленные архивы JDK, Android SDK и gradle
 ANDROID_SDK_TAR_GZ={androidSdkTarGz} 
 JDK_8_TAR_GZ={jdk8TarGz}
@@ -53,6 +53,6 @@ adb push archives/$GRADLE_ZIP $STORAGE/AStA/archives
 # Скрипт для запуска команд Gradle:
 adb push gradleExec.sh $STORAGE/AStA/scripts
 # Запускаем скрипт первоначальной настройки Debian:
-adb shell su -c sh $STORAGE/firstMountAndConfigureDebian.sh
+adb shell su -c sh $STORAGE/AStA/scripts/firstMountAndConfigureDebian.sh
 #
 echo 'installDebianOnAndroid script done'
