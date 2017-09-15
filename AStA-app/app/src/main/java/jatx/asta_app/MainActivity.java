@@ -677,7 +677,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-
                     File scriptFile = new File(getScriptsFolder(), scriptName);
                     final String cmd = "sh " + scriptFile.getAbsolutePath();
 

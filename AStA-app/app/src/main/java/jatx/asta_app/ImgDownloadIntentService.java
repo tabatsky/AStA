@@ -35,78 +35,72 @@ public class ImgDownloadIntentService extends IntentService {
         String imgSavePath = intent.getStringExtra("imgSavePath");
 
         try {
-            boolean downloadOk = false;
+            URL obj = new URL(url);
+            HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
+            conn.setReadTimeout(5000);
+            conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
+            conn.addRequestProperty("User-Agent", "Mozilla");
+            conn.addRequestProperty("Referer", "google.com");
 
-            while (!downloadOk) {
-                URL obj = new URL(url);
-                HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
-                conn.setReadTimeout(5000);
+            System.out.println("Request URL ... " + url);
+
+            boolean redirect = false;
+
+            // normally, 3xx is redirect
+            int status = conn.getResponseCode();
+            if (status != HttpURLConnection.HTTP_OK) {
+                if (status == HttpURLConnection.HTTP_MOVED_TEMP
+                        || status == HttpURLConnection.HTTP_MOVED_PERM
+                        || status == HttpURLConnection.HTTP_SEE_OTHER)
+                    redirect = true;
+            }
+
+            System.out.println("Response Code ... " + status);
+
+            if (redirect) {
+
+                // get redirect url from "location" header field
+                String newUrl = conn.getHeaderField("Location");
+
+                // get the cookie if need, for login
+                String cookies = conn.getHeaderField("Set-Cookie");
+
+                // open the new connnection again
+                conn = (HttpURLConnection) new URL(newUrl).openConnection();
+                conn.setRequestProperty("Cookie", cookies);
                 conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
                 conn.addRequestProperty("User-Agent", "Mozilla");
                 conn.addRequestProperty("Referer", "google.com");
 
-                System.out.println("Request URL ... " + url);
+                System.out.println("Redirect to URL : " + newUrl);
 
-                boolean redirect = false;
-
-                // normally, 3xx is redirect
-                int status = conn.getResponseCode();
-                if (status != HttpURLConnection.HTTP_OK) {
-                    if (status == HttpURLConnection.HTTP_MOVED_TEMP
-                            || status == HttpURLConnection.HTTP_MOVED_PERM
-                            || status == HttpURLConnection.HTTP_SEE_OTHER)
-                        redirect = true;
-                }
-
-                System.out.println("Response Code ... " + status);
-
-                if (redirect) {
-
-                    // get redirect url from "location" header field
-                    String newUrl = conn.getHeaderField("Location");
-
-                    // get the cookie if need, for login
-                    String cookies = conn.getHeaderField("Set-Cookie");
-
-                    // open the new connnection again
-                    conn = (HttpURLConnection) new URL(newUrl).openConnection();
-                    conn.setRequestProperty("Cookie", cookies);
-                    conn.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-                    conn.addRequestProperty("User-Agent", "Mozilla");
-                    conn.addRequestProperty("Referer", "google.com");
-
-                    System.out.println("Redirect to URL : " + newUrl);
-
-                }
-
-                InputStream is = conn.getInputStream();
-                OutputStream os = new FileOutputStream(imgSavePath);
-
-                long prevBytesTotal = 0;
-                long bytesTotal = 0;
-                byte[] buffer = new byte[20480];
-
-                int bytesRead = 0;
-                while (bytesRead >= 0) {
-                    bytesRead = is.read(buffer);
-                    if (bytesRead > 0) {
-                        os.write(buffer, 0, bytesRead);
-                        bytesTotal += bytesRead;
-                    }
-                    if (bytesTotal - prevBytesTotal > 1024 * 1024) {
-                        prevBytesTotal = bytesTotal;
-                        int mbTotal = (int) (bytesTotal / (1024 * 1024));
-                        Intent intent2 = new Intent(INTENT_UPDATE_PROGRESS);
-                        intent2.putExtra("mbProgress", mbTotal);
-                        sendBroadcast(intent2);
-                    }
-                }
-
-                os.close();
-                is.close();
-
-                downloadOk = true;
             }
+
+            InputStream is = conn.getInputStream();
+            OutputStream os = new FileOutputStream(imgSavePath);
+
+            long prevBytesTotal = 0;
+            long bytesTotal = 0;
+            byte[] buffer = new byte[20480];
+
+            int bytesRead = 0;
+            while (bytesRead >= 0) {
+                bytesRead = is.read(buffer);
+                if (bytesRead > 0) {
+                    os.write(buffer, 0, bytesRead);
+                    bytesTotal += bytesRead;
+                }
+                if (bytesTotal - prevBytesTotal > 1024 * 1024) {
+                    prevBytesTotal = bytesTotal;
+                    int mbTotal = (int) (bytesTotal / (1024 * 1024));
+                    Intent intent2 = new Intent(INTENT_UPDATE_PROGRESS);
+                    intent2.putExtra("mbProgress", mbTotal);
+                    sendBroadcast(intent2);
+                }
+            }
+
+            os.close();
+            is.close();
 
             Intent intent1 = new Intent(INTENT_DOWNLOAD_FINISHED);
             intent1.putExtra("result", "success");
