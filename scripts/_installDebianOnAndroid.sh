@@ -55,4 +55,4 @@ adb push gradleExec.sh $STORAGE/AStA/scripts
 # Запускаем скрипт первоначальной настройки Debian:
 adb shell su -c sh $STORAGE/firstMountAndConfigureDebian.sh
 #
-echo "install debian on android done"
+echo 'installDebianOnAndroid script done'

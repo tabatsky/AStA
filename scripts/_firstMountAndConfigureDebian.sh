@@ -1,3 +1,4 @@
+echo 'firstMountAndConfigureDebian script started'
 # Пароль для доступа по SSH:
 PASSWORD={password}
 # Точка монтирования Debian:
@@ -51,4 +52,4 @@ chroot $MNTPT tar -xzvf /AStA/archives/$ANDROID_SDK_TAR_GZ -C /opt
 chroot $MNTPT tar -xzvf /AStA/archives/$JDK_8_TAR_GZ -C /opt
 chroot $MNTPT unzip /AStA/archives/$GRADLE_ZIP -d /opt
 #
-echo "first mount and configure debian done"
+echo 'firstMountAndConfigureDebian script done'
