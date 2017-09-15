@@ -176,8 +176,8 @@ public class MainActivity extends AppCompatActivity {
                         StatFs stat = new StatFs(dirPath);
                         long bytesAvailable = (long)stat.getBlockSize() * (long)stat.getAvailableBlocks();
                         long megAvailable = bytesAvailable / (1024 * 1024);
-                        long megNeed = 4096;
-                        textFreeSize.setText("Need: " + megNeed + "MB\nFree: " + megAvailable + " MB");
+                        long megNeed = 4095;
+                        textFreeSize.setText("Need: " + megNeed + "MB\nAvailable: " + megAvailable + " MB");
                         buttonDownload.setEnabled(megAvailable >= megNeed);
                     }
                 };
