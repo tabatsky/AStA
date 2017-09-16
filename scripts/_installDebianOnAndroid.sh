@@ -54,5 +54,12 @@ adb push archives/$GRADLE_ZIP $STORAGE/AStA/archives
 adb push gradleExec.sh $STORAGE/AStA/scripts
 # Запускаем скрипт первоначальной настройки Debian:
 adb shell su -c sh $STORAGE/AStA/scripts/firstMountAndConfigureDebian.sh
-#
+# Размонтируем образ:
+adb shell su -c sh $STORAGE/AStA/scripts/umountDebian.sh
+# Имя файла приложения:
+ASTA_APP_APK={astaAppApk} 
+# Кладем приложение в папку AStA и устанавливаем:
+adb push apk/$ASTA_APP_APK $STORAGE/AStA
+echo 'installing AStA-app'
+adb shell pm install -r $STORAGE/AStA/$ASTA_APP_APK
 echo 'installDebianOnAndroid script done'

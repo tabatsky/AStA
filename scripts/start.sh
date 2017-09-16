@@ -13,6 +13,8 @@ DATA_DRIVE=/Data
 ANDROID_SDK_TAR_GZ=android-sdk-linux.tar.gz 
 JDK_8_TAR_GZ=jdk-8u144-linux-arm32-vfp-hflt.tar.gz
 GRADLE_ZIP=gradle-3.5-bin.zip
+# Имя файла приложения:
+ASTA_APP_APK=AStA-app.apk
 # Точка монтирования Debian:
 MNTPT=/data/local/debianOnAndroid
 
@@ -38,6 +40,7 @@ sed -i "s#{debianVersion}#$DEBIAN_VERSION#" installDebianOnAndroid.sh
 sed -i "s#{androidSdkTarGz}#$ANDROID_SDK_TAR_GZ#" installDebianOnAndroid.sh
 sed -i "s#{jdk8TarGz}#$JDK_8_TAR_GZ#" installDebianOnAndroid.sh
 sed -i "s#{gradleZip}#$GRADLE_ZIP#" installDebianOnAndroid.sh
+sed -i "s#{astaAppApk}#$ASTA_APP_APK#" installDebianOnAndroid.sh
 sed -i "s#{arch}#$ARCH#" installDebianOnAndroid.sh
 sed -i "s#{dataDrive}#$DATA_DRIVE#" installDebianOnAndroid.sh
 
@@ -46,9 +49,17 @@ sed -i "s#{androidSdkTarGz}#$ANDROID_SDK_TAR_GZ#" getArchives.sh
 sed -i "s#{jdk8TarGz}#$JDK_8_TAR_GZ#" getArchives.sh
 sed -i "s#{gradleZip}#$GRADLE_ZIP#" getArchives.sh
 
+cp _getApk.sh getApk.sh
+sed -i "s#{astaAppApk}#$ASTA_APP_APK#" getArchives.sh
+
 if [ ! -f archives/$ANDROID_SDK_TAR_GZ ] || [ ! -f archives/$JDK_8_TAR_GZ ] || [ ! -f archives/$GRADLE_ZIP ]; then
     echo 'Archives not found. Downloading...'
     sh getArchives.sh
+fi
+
+if [ ! -f apk/$ASTA_APP_APK ]; then
+    echo 'Apk not found. Downloading'
+    sh getApk.sh
 fi
 
 sh installDebianOnAndroid.sh
