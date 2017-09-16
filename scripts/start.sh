@@ -50,7 +50,7 @@ sed -i "s#{jdk8TarGz}#$JDK_8_TAR_GZ#" getArchives.sh
 sed -i "s#{gradleZip}#$GRADLE_ZIP#" getArchives.sh
 
 cp _getApk.sh getApk.sh
-sed -i "s#{astaAppApk}#$ASTA_APP_APK#" getArchives.sh
+sed -i "s#{astaAppApk}#$ASTA_APP_APK#" getApk.sh
 
 if [ ! -f archives/$ANDROID_SDK_TAR_GZ ] || [ ! -f archives/$JDK_8_TAR_GZ ] || [ ! -f archives/$GRADLE_ZIP ]; then
     echo 'Archives not found. Downloading...'
