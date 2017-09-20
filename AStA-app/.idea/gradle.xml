@@ -7,9 +7,9 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/aFileDialog" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="/mnt/DEVEL/Studio/AStA-app" />
+            <option value="/mnt/DEVEL/Studio/AStA-app/aFileDialog" />
+            <option value="/mnt/DEVEL/Studio/AStA-app/app" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

@@ -18,6 +18,7 @@ import android.os.StatFs;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TabHost;
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int PERMISSION_SDCARD_REQUEST_OPEN_DIR_FOR_DOWNLOAD = 1113;
     public static final int PERMISSION_SDCARD_REQUEST_REFRESH_PROJECTS = 1114;
     public static final int PERMISSION_SDCARD_REQUEST_PREPARE_ASTA_FOLDER = 1115;
+    public static final int PERMISSION_SDCARD_REQUEST_LIST_EDITOR_DIR = 1116;
 
     public static final String PERMISSION_READ = Manifest.permission.READ_EXTERNAL_STORAGE;
     public static final String PERMISSION_WRITE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
@@ -75,6 +79,13 @@ public class MainActivity extends AppCompatActivity {
     private List<String> projectList;
     private List<List<String>> moduleList;
 
+    private EditText editCodeEditor;
+    private LinearLayout panelCodeEditor;
+    private TextView textTitleFilesCodeEditor;
+    private ListView listFilesCodeEditor;
+
+    private File currentEditorDir;
+
     private static final String CUSTOM_CMD = "Custom cmd";
     private static final String[] GRADLE_CMD_ARR =
             {"clean build", "assembleDebug", "assembleRelease", CUSTOM_CMD};
@@ -85,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initTabs();
+        initEditor();
 
         editImgPath = (EditText) findViewById(R.id.edit_img_path);
         editImgPath.setEnabled(false);
@@ -253,6 +265,60 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        try {
+            File lastEditedFile = new File(getLastEditedPath());
+            if (getLastEditedPath().isEmpty() ||
+                    !lastEditedFile.exists() ||
+                    ((new Scanner(lastEditedFile)).useDelimiter("\\z").next())
+                            .equals(editCodeEditor.getText().toString())) {
+                finish();
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Save before closing?");
+                builder.setMessage("Last opened file contents was changed. Would you like to save it?");
+                builder.setNeutralButton("Cancel close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.setNegativeButton("Do not save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        finish();
+                    }
+                });
+                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+
+                        try {
+                            PrintWriter pw = new PrintWriter(new File(getLastEditedPath()));
+                            pw.print(editCodeEditor.getText().toString());
+                            pw.flush();
+                            pw.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        finish();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void refreshProjects(boolean permissionsOk) {
         if (!permissionsOk) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
@@ -391,7 +457,192 @@ public class MainActivity extends AppCompatActivity {
         tabSpec.setContent(R.id.tab2);
         tabHost.addTab(tabSpec);
 
-     }
+        tabSpec = tabHost.newTabSpec("tag3");
+        tabSpec.setIndicator("Editor");
+        tabSpec.setContent(R.id.tab3);
+        tabHost.addTab(tabSpec);
+    }
+
+    private void initEditor() {
+        editCodeEditor = (EditText) findViewById(R.id.edit_code_editor);
+        panelCodeEditor = (LinearLayout) findViewById(R.id.panel_code_editor);
+        textTitleFilesCodeEditor = (TextView) findViewById(R.id.text_title_files_code_editor);
+        listFilesCodeEditor = (ListView) findViewById(R.id.list_files_code_editor);
+
+        currentEditorDir = getCurrentEditorDir();
+
+        String titlePath = FileUtils.simplifyPath(currentEditorDir.getAbsolutePath());
+        titlePath = titlePath.replace(getProjectsFolder().getAbsolutePath(), "Projects");
+        textTitleFilesCodeEditor.setText(titlePath);
+
+        panelCodeEditor.setOnClickListener(new View.OnClickListener() {
+            boolean isExpanded = false;
+
+            @Override
+            public void onClick(View view) {
+                isExpanded = !isExpanded;
+                listFilesCodeEditor.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+                findViewById(R.id.img_expand_up_file_list_code_editor).setVisibility(isExpanded ? View.GONE : View.VISIBLE);
+                findViewById(R.id.img_expand_down_file_list_code_editor).setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+            }
+        });
+        panelCodeEditor.performClick();
+        listCurrentEditorDir(false);
+
+        try {
+            if (!getLastEditedPath().isEmpty()) {
+                String contents = (new Scanner(new File(getLastEditedPath()))).useDelimiter("\\z").next();
+                editCodeEditor.setText(contents);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error occured", Toast.LENGTH_LONG).show();
+        }
+
+        findViewById(R.id.button_save_code_editor).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    PrintWriter pw = new PrintWriter(new File(getLastEditedPath()));
+                    pw.print(editCodeEditor.getText().toString());
+                    pw.flush();
+                    pw.close();
+                    Toast.makeText(MainActivity.this, "Saved", Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        });
+    }
+
+    private void listCurrentEditorDir(boolean permissionsOk) {
+        if (!permissionsOk) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                if (checkSelfPermission(PERMISSION_READ)
+                        == PackageManager.PERMISSION_DENIED) {
+                    requestPermissions(PERMISSIONS, PERMISSION_SDCARD_REQUEST_LIST_EDITOR_DIR);
+                } else {
+                    listCurrentEditorDir(true);
+                }
+            } else {
+                listCurrentEditorDir(true);
+            }
+        } else {
+            if (!currentEditorDir.exists()) {
+                currentEditorDir = getProjectsFolder();
+            }
+
+            if (!currentEditorDir.isDirectory()) {
+                Toast.makeText(this, "Error: is not folder", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            File[] files = currentEditorDir.listFiles();
+            for (File file: files) {
+                if (file.isDirectory()) {
+                    Log.e("dir", file.getName());
+                } else if (file.isFile()) {
+                    Log.e("file", file.getName());
+                }
+            }
+            final FileListAdapter fileListAdapter = new FileListAdapter(this, files, currentEditorDir);
+            listFilesCodeEditor.setAdapter(fileListAdapter);
+            listFilesCodeEditor.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    File file = fileListAdapter.getItem(i);
+                    if (file.isDirectory()) {
+                        currentEditorDir = new File(file.getAbsolutePath());
+                        try {
+                            listCurrentEditorDir(false);
+                            saveCurrentEditorDir(currentEditorDir);
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+                            currentEditorDir = getCurrentEditorDir();
+                            listCurrentEditorDir(false);
+                        } finally {
+                            String titlePath = FileUtils.simplifyPath(currentEditorDir.getAbsolutePath());
+                            titlePath = titlePath.replace(getProjectsFolder().getAbsolutePath(), "Projects");
+                            textTitleFilesCodeEditor.setText(titlePath);
+                        }
+                    } else {
+                        openTextFile(file);
+                    }
+                }
+            });
+        }
+    }
+
+    private File fileToOpen = null;
+    private String contents = null;
+
+    private void openTextFile(File file) {
+        try {
+            contents = (new Scanner(file)).useDelimiter("\\z").next();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        try {
+            Log.e("last edited", ": " + getLastEditedPath());
+            File lastEditedFile = new File(getLastEditedPath());
+            if (getLastEditedPath().isEmpty() ||
+                    !lastEditedFile.exists() ||
+                    ((new Scanner(lastEditedFile)).useDelimiter("\\z").next())
+                            .equals(editCodeEditor.getText().toString())) {
+                editCodeEditor.setText(contents);
+                saveLastEditedPath(file.getAbsolutePath());
+            } else {
+                fileToOpen = file;
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Save before closing?");
+                builder.setMessage("Last opened file contents was changed. Would you like to save it?");
+                builder.setNeutralButton("Cancel close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.setNegativeButton("Do not save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        editCodeEditor.setText(contents);
+                        saveLastEditedPath(fileToOpen.getAbsolutePath());
+                    }
+                });
+                builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+
+                        try {
+                            PrintWriter pw = new PrintWriter(new File(getLastEditedPath()));
+                            pw.print(editCodeEditor.getText().toString());
+                            pw.flush();
+                            pw.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        editCodeEditor.setText(contents);
+                        saveLastEditedPath(fileToOpen.getAbsolutePath());
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+        }
+    }
 
     private void downloadImg(final String imgSavePath) {
         final ProgressDialog progressDialog;
@@ -454,6 +705,9 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 case PERMISSION_SDCARD_REQUEST_PREPARE_ASTA_FOLDER:
                     prepareAStAFolder(true);
+                    return;
+                case PERMISSION_SDCARD_REQUEST_LIST_EDITOR_DIR:
+                    listCurrentEditorDir(true);
                     return;
             }
         } else {
@@ -544,6 +798,32 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sp = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("imgPath", path);
+        editor.commit();
+    }
+
+    private File getCurrentEditorDir() {
+        SharedPreferences sp = getSharedPreferences(PREFS_NAME, 0);
+        return new File(FileUtils.simplifyPath(sp.getString("currentEditorDir", getProjectsFolder().getAbsolutePath())));
+    }
+
+    private void saveCurrentEditorDir(File dir) {
+        SharedPreferences sp = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("currentEditorDir", FileUtils.simplifyPath(dir.getAbsolutePath()));
+        editor.commit();
+    }
+
+    private String getLastEditedPath() {
+        SharedPreferences sp = getSharedPreferences(PREFS_NAME, 0);
+        String path = sp.getString("lastEditedPath", "");
+        if (!path.isEmpty()) path = FileUtils.simplifyPath(path);
+        return path;
+    }
+
+    private void saveLastEditedPath(String path) {
+        SharedPreferences sp = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("lastEditedPath", path);
         editor.commit();
     }
 
@@ -690,13 +970,13 @@ public class MainActivity extends AppCompatActivity {
 
                     final StringBuilder sb = new StringBuilder();
 
-                    String s1 = null;
-                    String s2 = null;
-                    while ((s1 = stdInput.readLine()) != null || (s2 = stdError.readLine()) != null) {
-                        if (s1 != null) {
+                    String s1 = stdInput.readLine();
+                    String s2 = stdError.readLine();
+                    while (s1 != null || s2 != null) {
+                        if ((s1 = stdInput.readLine()) != null) {
                             sb.append(s1 + "\n");
                         }
-                        if (s2 != null) {
+                        if ((s2 = stdError.readLine()) != null) {
                             sb.append(s2 + "\n");
                         }
                         runOnUiThread(new Runnable() {
@@ -754,13 +1034,13 @@ public class MainActivity extends AppCompatActivity {
 
                     final StringBuilder sb = new StringBuilder();
 
-                    String s1 = null;
-                    String s2 = null;
-                    while ((s1 = stdInput.readLine()) != null || (s2 = stdError.readLine()) != null) {
-                        if (s1 != null) {
+                    String s1 = stdInput.readLine();
+                    String s2 = stdError.readLine();
+                    while (s1 != null || s2 != null) {
+                        if ((s1 = stdInput.readLine()) != null) {
                             sb.append(s1 + "\n");
                         }
-                        if (s2 != null) {
+                        if ((s2 = stdError.readLine()) != null) {
                             sb.append(s2 + "\n");
                         }
                         runOnUiThread(new Runnable() {

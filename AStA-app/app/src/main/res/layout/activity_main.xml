@@ -197,6 +197,75 @@
                             android:layout_height="wrap_content"/>
                     </ScrollView>
                 </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/tab3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical" >
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1">
+                        <EditText
+                            android:id="@+id/edit_code_editor"
+                            android:gravity="left|top"
+                            android:textSize="15sp"
+                            android:typeface="monospace"
+                            android:background="@android:color/black"
+                            android:textColor="@android:color/white"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"/>
+                        <ImageButton
+                            android:id="@+id/button_save_code_editor"
+                            android:background="@android:color/white"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/ic_save"
+                            android:layout_marginRight="20dp"
+                            android:layout_marginBottom="20dp"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_width="45dp"
+                            android:layout_height="45dp" />
+                    </RelativeLayout>
+                    <LinearLayout
+                        android:id="@+id/panel_code_editor"
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:id="@+id/text_title_files_code_editor"
+                            android:textSize="20sp"
+                            android:textColor="@android:color/black"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"/>
+                        <View
+                            android:layout_width="10dp"
+                            android:layout_height="match_parent"
+                            />
+                        <ImageView
+                            android:id="@+id/img_expand_up_file_list_code_editor"
+                            android:src="@drawable/ic_expand_up"
+                            android:scaleType="fitXY"
+                            android:layout_width="45dp"
+                            android:layout_height="45dp" />
+                        <ImageView
+                            android:id="@+id/img_expand_down_file_list_code_editor"
+                            android:src="@drawable/ic_expand_down"
+                            android:scaleType="fitXY"
+                            android:layout_width="45dp"
+                            android:layout_height="45dp" />
+                        <View
+                            android:layout_width="10dp"
+                            android:layout_height="match_parent"
+                            />
+                    </LinearLayout>
+                    <ListView
+                        android:id="@+id/list_files_code_editor"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"></ListView>
+                </LinearLayout>
             </FrameLayout>
         </LinearLayout>
     </TabHost>

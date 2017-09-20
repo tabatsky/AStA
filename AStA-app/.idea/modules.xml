@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AStA-app.iml" filepath="$PROJECT_DIR$/AStA-app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/aFileDialog/aFileDialog.iml" filepath="$PROJECT_DIR$/aFileDialog/aFileDialog.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file:///mnt/DEVEL/Studio/AStA-app/AStA-app.iml" filepath="/mnt/DEVEL/Studio/AStA-app/AStA-app.iml" />
+      <module fileurl="file:///mnt/DEVEL/Studio/AStA-app/aFileDialog/aFileDialog.iml" filepath="/mnt/DEVEL/Studio/AStA-app/aFileDialog/aFileDialog.iml" />
+      <module fileurl="file:///mnt/DEVEL/Studio/AStA-app/app/app.iml" filepath="/mnt/DEVEL/Studio/AStA-app/app/app.iml" />
     </modules>
   </component>
 </project>

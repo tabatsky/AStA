@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    buildToolsVersion '26.0.1'
     defaultConfig {
         applicationId "jatx.asta_app"
         minSdkVersion 15
@@ -26,6 +26,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:24.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    //compile 'com.pddstudio:highlightjs-android:1.5.0'
     testCompile 'junit:junit:4.12'
     compile project(path: ':aFileDialog')
 }
