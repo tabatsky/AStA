@@ -14,7 +14,7 @@ public class FileUtils {
         StringBuilder absolutePath = new StringBuilder();
         for(String term : pathSplitter){
             if(term == null || term.length() == 0 || term.equals(".")){
-            /*ignore these guys*/
+                /*ignore these guys*/
             }else if(term.equals("..")){
                 if(pathDeterminer.size() > 0){
                     pathDeterminer.removeLast();

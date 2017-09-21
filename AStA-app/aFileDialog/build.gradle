@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 android {
     compileSdkVersion 24
-    buildToolsVersion '26.0.1'
+    buildToolsVersion '24.0.0'
 
     compileOptions.encoding = "windows-1251"
 
@@ -22,9 +22,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
     }
 
+    /*
     lintOptions {
         disable 'MissingTranslation'
     }
+    */
 }
 
 dependencies {

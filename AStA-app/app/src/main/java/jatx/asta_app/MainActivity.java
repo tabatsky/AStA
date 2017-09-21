@@ -11,14 +11,15 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
-import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     private List<String> projectList;
     private List<List<String>> moduleList;
 
+    private TextView textTitleCurrentCodeEditor;
     private EditText editCodeEditor;
     private LinearLayout panelCodeEditor;
     private TextView textTitleFilesCodeEditor;
@@ -272,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
             if (getLastEditedPath().isEmpty() ||
                     !lastEditedFile.exists() ||
                     ((new Scanner(lastEditedFile)).useDelimiter("\\z").next())
-                            .equals(editCodeEditor.getText().toString())) {
+                            .equals(editCodeEditor.getText().toString().replace(Html.fromHtml("&nbsp;"), " "))) {
                 finish();
             } else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -296,16 +298,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
 
-                        try {
-                            PrintWriter pw = new PrintWriter(new File(getLastEditedPath()));
-                            pw.print(editCodeEditor.getText().toString());
-                            pw.flush();
-                            pw.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+                        saveTextFile();
 
                         finish();
                     }
@@ -464,6 +457,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initEditor() {
+        textTitleCurrentCodeEditor = (TextView) findViewById(R.id.text_title_current_code_editor);
         editCodeEditor = (EditText) findViewById(R.id.edit_code_editor);
         panelCodeEditor = (LinearLayout) findViewById(R.id.panel_code_editor);
         textTitleFilesCodeEditor = (TextView) findViewById(R.id.text_title_files_code_editor);
@@ -491,8 +485,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             if (!getLastEditedPath().isEmpty()) {
-                String contents = (new Scanner(new File(getLastEditedPath()))).useDelimiter("\\z").next();
-                editCodeEditor.setText(contents);
+                showTextFileContents();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -502,17 +495,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button_save_code_editor).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                try {
-                    PrintWriter pw = new PrintWriter(new File(getLastEditedPath()));
-                    pw.print(editCodeEditor.getText().toString());
-                    pw.flush();
-                    pw.close();
-                    Toast.makeText(MainActivity.this, "Saved", Toast.LENGTH_LONG).show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
-                    return;
-                }
+                saveTextFile();
+                Toast.makeText(MainActivity.this, "Saved", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -540,7 +524,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             File[] files = currentEditorDir.listFiles();
-            for (File file: files) {
+            for (File file : files) {
                 if (file.isDirectory()) {
                     Log.e("dir", file.getName());
                 } else if (file.isFile()) {
@@ -575,12 +559,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private File fileToOpen = null;
-    private String contents = null;
-
     private void openTextFile(File file) {
         try {
-            contents = (new Scanner(file)).useDelimiter("\\z").next();
+            String contents = (new Scanner(file)).useDelimiter("\\z").next();
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
@@ -593,11 +574,11 @@ public class MainActivity extends AppCompatActivity {
             if (getLastEditedPath().isEmpty() ||
                     !lastEditedFile.exists() ||
                     ((new Scanner(lastEditedFile)).useDelimiter("\\z").next())
-                            .equals(editCodeEditor.getText().toString())) {
-                editCodeEditor.setText(contents);
+                            .equals(editCodeEditor.getText().toString().replace(Html.fromHtml("&nbsp;"), " "))) {
                 saveLastEditedPath(file.getAbsolutePath());
+                showTextFileContents();
             } else {
-                fileToOpen = file;
+                final File fileToOpen = file;
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Save before closing?");
                 builder.setMessage("Last opened file contents was changed. Would you like to save it?");
@@ -611,8 +592,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
-                        editCodeEditor.setText(contents);
                         saveLastEditedPath(fileToOpen.getAbsolutePath());
+                        showTextFileContents();
                     }
                 });
                 builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
@@ -620,19 +601,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();
 
-                        try {
-                            PrintWriter pw = new PrintWriter(new File(getLastEditedPath()));
-                            pw.print(editCodeEditor.getText().toString());
-                            pw.flush();
-                            pw.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+                        saveTextFile();
 
-                        editCodeEditor.setText(contents);
                         saveLastEditedPath(fileToOpen.getAbsolutePath());
+                        showTextFileContents();
                     }
                 });
                 AlertDialog dialog = builder.create();
@@ -641,6 +613,66 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void showTextFileContents() {
+        try {
+            File lastEditedFile = new File(getLastEditedPath());
+            final String contents = (new Scanner(lastEditedFile)).useDelimiter("\\z").next();
+            if (getLastEditedPath().endsWith(".java")) {
+                //editCodeEditor.setSpannableFactory(Spannable.Factory.getInstance());
+                final ProgressDialog pd = new ProgressDialog(this);
+                pd.setIndeterminate(true);
+                pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                pd.setCancelable(false);
+                pd.setTitle("Loading java file to editor...");
+                pd.show();
+                new Thread() {
+                    @Override
+                    public void run() {
+                        Log.e("time 1", "" + System.currentTimeMillis());
+                        String html = JavaSourceHighlighter.highlightJava(contents);
+                        final Spanned htmlSpanned;
+                        if (Build.VERSION.SDK_INT >= 24) {
+                            htmlSpanned = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
+                        } else {
+                            htmlSpanned = Html.fromHtml(html);
+                        }
+                        Log.e("time 2", "" + System.currentTimeMillis());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                editCodeEditor.setText(htmlSpanned);
+                                pd.dismiss();
+                            }
+                        });
+                    }
+                }.start();
+
+                //editCodeEditor.setMovementMethod(LinkMovementMethod.getInstance());
+            } else {
+                editCodeEditor.setText(contents);
+            }
+
+            textTitleCurrentCodeEditor.setText(lastEditedFile.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void saveTextFile() {
+        try {
+            PrintWriter pw = new PrintWriter(new File(getLastEditedPath()));
+            pw.print(editCodeEditor.getText().toString().replace(Html.fromHtml("&nbsp;").toString(), " "));
+            pw.flush();
+            pw.close();
+            Log.e("text", editCodeEditor.getText().toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(MainActivity.this, "Error occured", Toast.LENGTH_LONG).show();
+            return;
         }
     }
 

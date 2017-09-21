@@ -202,6 +202,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical" >
+                    <TextView
+                        android:id="@+id/text_title_current_code_editor"
+                        android:textSize="20sp"
+                        android:textColor="@android:color/black"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        />
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
@@ -209,10 +216,11 @@
                         <EditText
                             android:id="@+id/edit_code_editor"
                             android:gravity="left|top"
-                            android:textSize="15sp"
+                            android:textSize="10sp"
                             android:typeface="monospace"
                             android:background="@android:color/black"
                             android:textColor="@android:color/white"
+                            android:inputType="textNoSuggestions|textMultiLine"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"/>
                         <ImageButton
