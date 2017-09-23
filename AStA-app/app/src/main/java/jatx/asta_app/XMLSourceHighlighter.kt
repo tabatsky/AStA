@@ -34,39 +34,9 @@ object XMLSourceHighlighter {
     )
 
     var insideComment: Boolean = false
-    var importedClassNames: MutableList<String>? = null
-
-    private fun analizeImports(src: String) {
-        var src = src
-        importedClassNames = ArrayList()
-
-        src = src.replace("\t", " ")
-
-        val lines = src.split("\\r?\\n".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-
-        for (_line in lines) {
-            if (_line.startsWith("import") && _line.endsWith(";")) {
-                var line = _line
-                line = line.replace("import", "")
-                line = line.replace(";", "")
-                line = line.replace(" ", "")
-
-                val words = line.split("\\.".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-                for (word in words) {
-                    if (word.length > 0 && word.get(0) >= 'A' && word.get(0) <= 'Z') {
-                        importedClassNames!!.add(word)
-                    }
-                }
-            }
-        }
-    }
 
     private fun isStringLiteral(word: String): Boolean {
         return word.startsWith("\"") && word.endsWith("\"")
-    }
-
-    private fun isCharLiteral(word: String): Boolean {
-        return word.startsWith("'") && word.endsWith("'")
     }
 
     private fun isNumberLiteral(word: String): Boolean {
@@ -96,34 +66,6 @@ object XMLSourceHighlighter {
 
     private fun isSyntaxCharacter(word: String): Boolean {
         return SYNTAX_CHARACTERS_LIST.contains(word)
-    }
-
-    private fun isNotImportedClassName(word: String): Boolean {
-        if (word.isEmpty()) return false
-
-        var result = true
-
-        result = result && word[0] >= 'A' && word[0] <= 'Z'
-
-        for (i in 1 until word.length) {
-            val c = word[i]
-            result = result && (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z')
-        }
-
-        return result
-    }
-
-    private fun isConstName(word: String): Boolean {
-        if (word.isEmpty()) return false
-
-        var result = true
-
-        for (i in 0 until word.length) {
-            val c = word[i]
-            result = result && (c >= 'A' && c <= 'Z' || c == '_')
-        }
-
-        return result
     }
 
     private fun isComment(word: String): Boolean {
