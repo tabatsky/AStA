@@ -1,3 +1,7 @@
 <resources>
+    <!--
+    multiline comment
+    -->
     <string name="app_name">AStA-app</string>
+    <!-- comment -->
 </resources>

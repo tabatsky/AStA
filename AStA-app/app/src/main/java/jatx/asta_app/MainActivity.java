@@ -634,11 +634,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("time 1", "" + System.currentTimeMillis());
                         String html = JavaSourceHighlighter.highlightJava(contents);
                         final Spanned htmlSpanned;
-                        if (Build.VERSION.SDK_INT >= 24) {
-                            htmlSpanned = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
-                        } else {
-                            htmlSpanned = Html.fromHtml(html);
-                        }
+                        htmlSpanned = Html.fromHtml(html);
                         Log.e("time 2", "" + System.currentTimeMillis());
                         runOnUiThread(new Runnable() {
                             @Override
@@ -651,6 +647,54 @@ public class MainActivity extends AppCompatActivity {
                 }.start();
 
                 //editCodeEditor.setMovementMethod(LinkMovementMethod.getInstance());
+            } else if (getLastEditedPath().endsWith(".xml")) {
+                final ProgressDialog pd = new ProgressDialog(this);
+                pd.setIndeterminate(true);
+                pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                pd.setCancelable(false);
+                pd.setTitle("Loading xml file to editor...");
+                pd.show();
+                new Thread() {
+                    @Override
+                    public void run() {
+                        Log.e("time 1", "" + System.currentTimeMillis());
+                        String html = XMLSourceHighlighterKt.highlightXML(contents);
+                        final Spanned htmlSpanned;
+                        htmlSpanned = Html.fromHtml(html);
+                        Log.e("time 2", "" + System.currentTimeMillis());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                editCodeEditor.setText(htmlSpanned);
+                                pd.dismiss();
+                            }
+                        });
+                    }
+                }.start();
+            } else if (getLastEditedPath().endsWith(".gradle")) {
+                final ProgressDialog pd = new ProgressDialog(this);
+                pd.setIndeterminate(true);
+                pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                pd.setCancelable(false);
+                pd.setTitle("Loading gradle file to editor...");
+                pd.show();
+                new Thread() {
+                    @Override
+                    public void run() {
+                        Log.e("time 1", "" + System.currentTimeMillis());
+                        String html = GradleSourceHighlighter.Companion.highlghtGradle(contents);
+                        final Spanned htmlSpanned;
+                        htmlSpanned = Html.fromHtml(html);
+                        Log.e("time 2", "" + System.currentTimeMillis());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                editCodeEditor.setText(htmlSpanned);
+                                pd.dismiss();
+                            }
+                        });
+                    }
+                }.start();
             } else {
                 editCodeEditor.setText(contents);
             }

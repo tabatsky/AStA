@@ -25,11 +25,46 @@ public class JavaSourceHighlighter {
     public static final List<String> JAVA_KEYWORDS_LIST = Arrays.asList(JAVA_KEYWORDS);
 
     public static final String[] SYNTAX_CHARACTERS = new String[] {
-            "{", "}", "(", ")", "[", "]", ".", ";", ",", "=", "<", ">", "&", "|", "!", "+", "-", "*", "/"
+            "{", "}", "(", ")", "[", "]", ".", ";", ",", "=", "<", ">",
+            "&", "|", "!", "+", "-", "*", "%", "/", ",", ":", "?", ":"
     };
     public static final List<String> SYNTAX_CHARACTERS_LIST = Arrays.asList(SYNTAX_CHARACTERS);
 
+    public static final String[] JAVA_LANG_CLASSES = new String[] {
+            "Appendable", "AutoCloseable", "CharSequense", "Cloneable", "Comparable", "Iterable",
+            "Readable", "Runnable", "UncaughtExceptionHandler",
+            "Boolean", "Byte", "Character", "Subset", "UnicodeBlock", "Class", "ClassLoader",
+            "ClassValue", "Compiler", "Double", "Enum", "Float", "InheritableThreadLocal",
+            "Integer", "Long", "Math", "Number", "Object", "Package", "Process",
+            "ProcessBuilder", "Redirect", "Runtime", "RuntimePermission", "SecurityManager",
+            "Short", "StackTraceElement", "StrictMath", "String", "StringBuffer", "StringBuilder",
+            "System", "Thread", "ThreadGroup", "ThreadLocal", "Throwable", "Void",
+            "UnicodeScript", "Type", "State",
+            "ArithmeticException", "ArrayIndexOutOfBoundsException", "ArrayStoreException",
+            "ClassCastException", "ClassNotFoundException", "CloneNotSupportedException",
+            "EnumConstantNotPresentException", "Exception", "IllegalAccessException",
+            "IllegalArgumentException", "IllegalMonitorStateException", "IllegalStateException",
+            "IllegalThreadStateException", "IndexOutOfBoundsException", "InstantiationException",
+            "InterruptedException", "NegativeArraySizeException", "NoSuchFieldException",
+            "NoSushMethodException", "NullPointerException", "NumberFormatException",
+            "ReflectiveOperationException", "RuntimeException", "SecurityException",
+            "StringIndexOutOfBoundsException", "TypeNotPresentException", "UnsupportedOperationException",
+            "AbstractMethodError", "AssertionError", "BootstrapMethodError", "ClassCircularityError",
+            "ClassFormatError", "Error", "ExceptionInInitializerError", "IllegalAccessError",
+            "IncompatibleClassChangeError", "InstantiationError", "InternalError", "LinkageError",
+            "NoClassDefFoundError", "NoSuchFieldError", "NoSuchMethodError", "OutOfMemoryError",
+            "StackOverflowError", "ThreadDeath", "UnknownError", "UnsatisfiedLinkError",
+            "UnsupportedClassVersionError", "VerifyError", "VirtualMachineError"
+    };
+    public static final List<String> JAVA_LANG_CLASSES_LIST = Arrays.asList(JAVA_LANG_CLASSES);
+
+    private static boolean insideMultilineComment;
+    private static List<String> importedClassNames;
+
     public static String highlightJava(String src) {
+        insideMultilineComment = false;
+        analizeImports(src);
+
         StringBuilder htmlBuilder = new StringBuilder();
 
         String[] lines = src.split("\\r?\\n");
@@ -44,6 +79,29 @@ public class JavaSourceHighlighter {
         }
 
         return htmlBuilder.toString();
+    }
+
+    private static void analizeImports(String src) {
+        importedClassNames = new ArrayList<>();
+
+        src = src.replace("\t", " ");
+
+        String[] lines = src.split("\\r?\\n");
+
+        for (String line: lines) {
+            if (line.startsWith("import") && line.endsWith(";")) {
+                line = line.replace("import", "");
+                line = line.replace(";", "");
+                line = line.replace(" ", "");
+
+                String[] words = line.split("\\.");
+                for (String word: words) {
+                    if (word.length() > 0 && word.charAt(0) >= 'A' && word.charAt(0) <= 'Z') {
+                        importedClassNames.add(word);
+                    }
+                }
+             }
+        }
     }
 
     private static boolean isStringLiteral(String word) {
@@ -88,6 +146,10 @@ public class JavaSourceHighlighter {
     }
 
     private static boolean isClassName(String word) {
+        return JAVA_LANG_CLASSES_LIST.contains(word) || importedClassNames.contains(word);
+    }
+
+    private static boolean isNotImportedClassName(String word) {
         if (word.isEmpty()) return false;
 
         boolean result = true;
@@ -156,12 +218,17 @@ public class JavaSourceHighlighter {
             return wrapWordWithColor(word, "#7777FF");
         }
 
+
         if (isClassName(word)) {
             return wrapWordWithColor(word, "#77FFFF");
         }
 
         if (isConstName(word)) {
             return wrapWordWithColor(word, "#FF77FF");
+        }
+
+        if (isNotImportedClassName(word)) {
+            return wrapWordWithColor(word, "#77FFFF");
         }
 
         if (isAnnotation(word)) {
@@ -177,7 +244,6 @@ public class JavaSourceHighlighter {
         return "<font color=\"" + color + "\">" + word + "</font>";
     }
 
-    private static boolean insideMultilineComment = false;
     private static String wrapLine(String line, boolean isLast) {
         line = line.replace("\t", "    ");
 
@@ -199,7 +265,7 @@ public class JavaSourceHighlighter {
                 wordBuilder = new StringBuilder();
                 wordBuilder.append(c);
                 isCommentStarted = true;
-            } else if (c=='/' && k < line.length() - 1 && line.charAt(k+1) == '*' && !insideMultilineComment) {
+            } else if (c=='/' && k < line.length() - 1 && line.charAt(k+1) == '*' && !insideMultilineComment && !insideStringConst) {
                 words.add(wordBuilder.toString());
                 wordBuilder = new StringBuilder();
                 wordBuilder.append("/*");
