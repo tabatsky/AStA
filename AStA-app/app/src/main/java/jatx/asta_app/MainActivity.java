@@ -658,7 +658,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.e("time 1", "" + System.currentTimeMillis());
-                        String html = XMLSourceHighlighterKt.highlightXML(contents);
+                        String html = XMLSourceHighlighter.Companion.highlightXML(contents);
                         final Spanned htmlSpanned;
                         htmlSpanned = Html.fromHtml(html);
                         Log.e("time 2", "" + System.currentTimeMillis());
