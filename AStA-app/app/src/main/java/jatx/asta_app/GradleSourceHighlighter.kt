@@ -15,7 +15,7 @@ class GradleSourceHighlighter {
 
         private var insideMultilineComment = false
 
-        fun highlghtGradle(src: String): String {
+        fun highlightGradle(src: String): String {
             insideMultilineComment = false;
 
             val htmlBuilder = StringBuilder()
